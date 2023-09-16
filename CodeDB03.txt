@@ -1,0 +1,154 @@
+create table category(
+categoryid varchar(3) primary key,
+categoryname text
+)
+
+insert into category
+values
+('C01', 'Household'),
+('C02', 'Stationery'),
+('C03', 'Food');
+	
+create table product(
+productid varchar(3) primary key,
+productname text,
+unitprice int,
+categoryid varchar(3) 
+)
+
+insert into product
+values
+('P01', 'Bowl', 1, 'C01'),
+('P02', 'Paper', 2, 'C02'),
+('P03', 'Beverage', 3, 'C03'),
+('P04', 'Spoon', 55, 'C01'),
+('P05', 'Vegetables', 12, 'C03'),
+('P06', 'Pen', 11, 'C02'),
+('P07', 'Pencil', 8, 'C02'),
+('P08', 'Sofa', 14, 'C01'),
+('P09', 'Fish', 15, 'C03'),
+('P10', 'Chopsticks', 55, 'C01'),
+('P11', 'Noodle', 120, 'C03'),
+('P12', 'Ruler', 7, 'C02'),
+('P13', 'Chicken', 12, 'C03'),
+('P14', 'Eraser', 110, 'C02'),
+('P15', 'Pan', 100, 'C01'),
+('P16', 'Sticker', 1, 'C02'),
+('P17', 'Rice', 7, 'C03'),
+('P18', 'Pot', 85, 'C01'),
+('P19', 'Calculator', 13, 'C02'),
+('P20', 'Garbage', 12, 'C01');
+
+create table warehouse(
+warehouseid varchar(3) primary key,
+warehouseaddress text,
+categoryid varchar(3)
+)
+
+insert into warehouse
+values
+('W05', 'An Giang', 'C01'),
+('W03', 'Ben Tre', 'C03'),
+('W02', 'Long An', 'C02'),
+('W01', 'Ho Chi Minh City', 'C01'),
+('W04', 'Tien Giang', 'C02');
+
+create table instock(
+warehouseid varchar(3),
+productid varchar(3),
+quantity int,
+primary key(warehouseid, productid)
+)
+
+insert into instock
+values 
+('W01', 'P01', 500),
+('W01', 'P10', 1000),
+('W01', 'P20', 25),
+('W02', 'P02', 10),
+('W02', 'P06', 100),
+('W02', 'P07', 3600),
+('W03', 'P03', 60),
+('W03', 'P05', 6),
+('W03', 'P09', 100),
+('W03', 'P11', 100),
+('W03', 'P13', 4),
+('W04', 'P16', 540),
+('W05', 'P18', 500);
+
+---------------------------------------  QUERIES LIST  ---------------------------------------
+3.1. All the products of category id = 'C02'
+select *
+from product
+where categoryid = 'C02'
+
+3.2. All the warehouses (*) that store category id = 'C01'
+select *
+from warehouse
+where categoryid = 'C01'
+
+3.3. All the warehouses (*) in now store product name = 'Beverage'
+select *
+from product a, warehouse b
+where a.categoryid = b.categoryid and productname = 'Beverage'
+
+3.4. All the products, it can be store in warehouse id = 'W01'
+select *
+from product a, warehouse b
+where a.categoryid = b.categoryid and warehouseid = 'W01'
+
+3.5. Calculating sum of quantity for each warehouses
+select warehouseid, sum(quantity) as "total quantity"
+from instock
+group by warehouseid
+
+3.6. Find warehouse have the largest total quantities
+select warehouseid, sum(quantity) as "total quantity"
+from instock
+group by warehouseid
+having sum(quantity) >= all(select sum(quantity)
+		   				    from instock
+					        group by warehouseid)
+
+3.7. Calculating count of product for each warehouse
+select warehouseid, count(productid) as "count of product"
+from instock
+group by warehouseid
+
+3.8. Find warehouses have the largest number of product
+select warehouseid, count(productid) as "count of product"
+from instock
+group by warehouseid
+having count(productid) >= all(select count(productid)
+					           from instock
+					           group by warehouseid)
+
+3.9. Calculating sum of quantity for each product
+select productid, sum(quantity) as "total quantity"
+from instock
+group by productid
+
+3.10. Show products have the largest total of quantities
+select productid, sum(quantity) as "total quantity"
+from instock
+group by productid
+having sum(quantity) >= all(select sum(quantity)
+				            from instock
+				            group by productid)
+
+-------------------------------------  EXTRA EXERCISES  --------------------------------------
+Run the following code
+select *
+from instock a
+where productid in (select productid
+				    from warehouse b, product c
+				    where a.warehouseid = b.warehouseid
+				    and b.categoryid = c.categoryid)
+
+select *
+from instock a, warehouse b
+where a.warehouseid = b.warehouseid
+and productid in (select productid
+				  from warehouse c, product d
+				  where b.categoryid <> c.categoryid
+				  and c.categoryid = d.categoryid)//tìm mặt hàng khác mặt hàng ở trên

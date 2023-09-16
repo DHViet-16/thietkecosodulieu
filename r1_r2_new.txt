@@ -1,0 +1,122 @@
+create table r1(a integer,b integer);
+create table r2(b integer,c integer);
+
+create or replace function check_ac()
+returns trigger language plpgsql as
+$$
+begin
+if exists (select * from r1,r2
+		  where r1.a=new.a 
+		  and r1.b=r2.b
+		  and a<c) then
+raise notice '%',TG_ARGV[0] ;
+return null ;
+end if; return new ;
+end ;
+$$ ;
+
+create or replace trigger insert_ac
+after insert or update of a on r1
+for each row
+execute procedure check_ac('a<c!!')
+
+insert into r2 values(1,2)
+insert into r1 values(1,1)
+
+
+create or replace function check_ac1()
+returns trigger language plpgsql as
+$$
+begin
+if exists (select * from r1,r2
+		  where r2.c=new.c 
+		  and r1.b=r2.b
+		  and a<c) then
+raise notice '%',TG_ARGV[0] ;
+return null ;
+end if; return new ;
+end ;
+$$ ;
+
+create or replace trigger insert_ac1
+after insert or update of c on r2
+for each row
+execute procedure check_ac1('a<c!!')
+
+
+insert into r2 values(2,4)
+insert into r1 values(2,2)
+
+------------------------------------
+create table r1(a integer,b integer, c integer);
+create table r2(c integer,d integer, e integer);
+
+create or replace function check_bd()
+returns trigger language plpgsql as
+$$
+begin
+if exists (select * from r1,r2
+		  where r1.a=new.a 
+		  and r1.c=r2.c
+		  and b<=d) then
+raise notice '%',TG_ARGV[0] ;
+return null ;
+end if; return new ;
+end ;
+$$ ;
+---------------------------------
+create table R1(A integer,B integer, C integer);
+create table R2(C integer,D integer, E integer);
+
+create or replace function func_R1()
+returns trigger language plpgsql as
+$$
+Begin
+	if exists (select * from R1,R2
+		  where new.B=R1.B
+		  and R1.C=R2.C
+		  and R1.B>R2.D) then
+	raise exception '%', TG_ARGV[0] ;
+	return null;
+	end if;
+	return new;
+end;
+$$
+
+create or replace trigger insert_R1
+after insert or update of B , C on R1
+for each row
+execute procedure func_R1(' B >D : wrong data') ;
+
+
+create or replace function func_R2()
+returns trigger language plpgsql as
+$$
+Begin
+	if exists (select * from R1,R2
+		  where new.D=R2.D
+		  and R1.C=R2.C
+		  and R1.B>R2.D) then
+	raise exception '%', TG_ARGV[0] ;
+	return null;
+	end if;
+	return new;
+end;
+$$
+
+
+create or replace trigger insert_R2
+after insert or update of C , D on R2
+for each row
+execute procedure func_R2('insert invalid D<B') ;
+
+
+SELECT * FROM R2
+INSERT INTO R2 VALUES(1,1,1)
+INSERT INTO R1 VALUES(1,2,1)
+INSERT INTO R1 VALUES(1,0,1)
+update R2 set D='0'
+update R1 set B='4'
+delete FROM R1
+delete FROM R2
+

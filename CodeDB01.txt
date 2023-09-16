@@ -1,0 +1,240 @@
+create table subject(
+subjectid varchar(3) primary key, 
+subjectname char(30), 
+units int
+);
+
+insert into subject
+values
+('S01', 'Database', 3),
+('S02', 'Database Design', 3),
+('S03', 'Computer Architecture', 3),
+('S04', 'Algebra', 2),
+('S05', 'Athletics', 1);
+
+create table class(
+classid varchar(3) primary key, 
+classname char(30), 
+classyear text
+);
+
+insert into class
+values
+('C01', 'Computer Science', '2022 - 2026'),
+('C02', 'Database', '2021 - 2025'),
+('C03', 'Programming', '2020 - 2024');
+
+create table student(
+studentid varchar(3) primary key,
+studentname char(50), 
+studentaddress varchar(50),
+classid varchar(3)
+);
+
+insert into student
+values
+('T01', 'Nguyen Van A', 'Binh Thanh District, Ho Chi Minh City', 'C01'),
+('T02', 'Nguyen Van B', 'Go Vap District, Ho Chi Minh City', 'C02'),
+('T03', 'Nguyen Van C', 'Chau Thanh District, Long An Province', 'C02'),
+('T04', 'Nguyen Van D', 'Mo Cay Bac District, Ben Tre Province', 'C01'),
+('T05', 'Nguyen Van E', '3 District, Ho Chi Minh City', 'C03'),
+('T06', 'Nguyen Van F', 'Vung Tau City, Ba Ria - Vung Tau Province', 'C01'),
+('T07', 'Nguyen Van G', '7 District, Ho Chi Minh City', 'C03'),
+('T08', 'Nguyen Van H', '8 District, Ho Chi Minh City', 'C01'),
+('T09', 'Nguyen Van Y', 'Sa Dec City, Dong Thap Province', 'C02'),
+('T10', 'Nguyen Van K', 'Thu Đuc District, Ho Chi Minh City', 'C01'),
+('T11', 'Nguyen Van L', 'Binh Thanh District, Ho Chi Minh City', 'C03'),
+('T12', 'Nguyen Van M', 'Go Vap District, Ho Chi Minh City', 'C02'),
+('T13', 'Nguyen Van N', 'Thu Thua District, Long An Province', 'C03'),
+('T14', 'Nguyen Van U', 'Long Xuyen City, An Giang Province', 'C02'),
+('T15', 'Nguyen Van O', '2 District, Ho Chi Minh City', 'C01'),
+('T16', 'Nguyen Van Z', 'My Tho City, Tien Giang Province', 'C03'),
+('T17', 'Nguyen Van W', 'Buon Ma Thuot City, Dak Lak Province', 'C01'),
+('T18', 'Nguyen Van X', '7 District, Ho Chi Minh City', 'C02'),
+('T19', 'Nguyen Van Y', 'Thu Đuc District, Ho Chi Minh City', 'C02'),
+('T20', 'Nguyen Van T', 'Binh Thanh District, Ho Chi Minh City', 'C01');	
+
+create table studentgrades(
+studentid varchar(3),
+subjectid varchar(3),  
+grades float,
+primary key (subjectid, studentid)
+);
+
+insert into studentgrades
+values
+('T01', 'S01', 10.0),
+('T01', 'S02', 8.7),
+('T02', 'S02', 9.7),
+('T02', 'S04', 9.5),
+('T02', 'S05', 4.5),
+('T03', 'S03', 7.9),
+('T03', 'S04', 9.3),
+('T04', 'S02', 8.9),
+('T04', 'S03', 7.7),
+('T05', 'S04', 8.9),
+('T06', 'S03', 9.3),
+('T06', 'S04', 6.9),
+('T07', 'S05', 9.6),
+('T08', 'S01', 5.3),
+('T08', 'S03', 9.7),
+('T08', 'S05', 7.0),
+('T09', 'S01', 6.7),
+('T10', 'S02', 5.0),
+('T13', 'S03', 4.5),
+('T15', 'S02', 3.7),
+('T16', 'S01', 4.0),
+('T16', 'S02', 4.0),
+('T16', 'S03', 10.0),
+('T18', 'S01', 7.5),
+('T19', 'S02', 4.0),
+('T20', 'S01', 7.0),
+('T20', 'S02', 8.0);
+
+---------------------------------------  QUERIES LIST  ---------------------------------------
+5.1. Show students of class id = 'C02'
+select *
+from student
+where classid = 'C02'
+
+5.2. Show students of class name = 'Computer Science'
+select b.studentid, b.studentname, classname
+from class a, student b
+where a.classid = b.classid and classname = 'Computer Science'
+
+5.3. Show students (all information) of class year = '2020 - 2024'
+select b.*, classyear
+from class a, student b
+where a.classID = b.classid and classyear = '2020 - 2024'
+
+5.4. Show subject (name and units) of the subject id = 'S01'
+select *
+from subject
+where subjectid = 'S01'
+
+5.5. Grades of subject id = 'S02' of student id = 'T02'
+select *
+from studentgrades
+where subjectid = 'S02' and studentid = 'T02'
+
+5.6. Find subject (id, name and grades) that student id = 'T02' fail.
+select studentid, a.subjectid, subjectname, grades
+from subject a, studentgrades b
+where a.subjectid = b.subjectid and studentid = 'T02' and grades < 5
+
+5.7. Show all the subject (*) that student id = 'T03' never took the exam
+select *
+from subject
+where subjectid not in (select subjectid
+					    from studentgrades
+					    where studentid = 'T03')
+
+5.8. Number of students for each class
+select classid, count(studentid) as "number of students"
+from student 
+group by classid
+
+5.9. Find the classes with the largest number of students
+1st way:
+select classid, count(*) as "number of students"
+from student
+group by classid
+having count(*) >= all(select count(*)
+					   from student
+					   group by classid)
+					   
+2nd way:
+select classid, count(*) as "number of students"
+from student
+group by classid
+having count(*) = (select max(ss)
+				   from (select count(*) as "ss"
+					     from student
+					     group by classid) as R)
+
+5.10. GPA (grade point average) of student id = 'T02'
+select studentid, avg(grades) as "gpa"
+from studentgrades
+where studentid = 'T02'
+group by studentid
+
+5.11. GPA for each student
+select studentid, avg(grades) as "gpa"
+from studentgrades
+group by studentid
+
+5.12. GPA of class id = 'C02'
+select classid, avg(grades) as "gpa"
+from student a, studentgrades b
+where a.studentid = b.studentid and classid = 'C02'
+group by classid
+
+5.13. GPA for each class.
+select a.classid, avg(grades) as "gpa"
+from student a, studentgrades b
+where a.studentid = b.studentid
+group by classid
+
+5.14. Find students have the largest GPA
+select studentid, avg(grades) as "gpa"
+from studentgrades
+group by studentid
+having avg(grades) >= all(select avg(grades)
+			              from studentgrades
+			              group by studentid)
+
+5.15. Find students (id and name) have the largest GPA
+select a.studentid, studentname, avg(grades) as "gpa"
+from student a, studentgrades b
+where a.studentid = b.studentid
+group by a.studentid, studentname
+having avg(grades) >= all(select avg(grades)
+				          from studentgrades
+				          group by studentid)
+
+
+5.16. Find classes (id and name) have the largest GPA
+select a.classid, classname, avg(grades) as "gpa"
+from class a, student b, studentgrades c
+where a.classid = b.classid and b.studentid = c.studentid
+group by a.classid
+having avg(grades) >= all(select avg(grades)
+				          from class a, student b, studentgrades c
+				          where a.classid = b.classid and b.studentid = c.studentid
+			              group by a.classid)
+
+
+5.17. GPA with weight for each student
+select studentid, sum(grades * units) / sum(units) as "gpa with weight"
+from subject a, studentgrades b
+where a.subjectid = b.subjectid
+group by studentid
+
+5.18. GPA with weight for each student (id and name)
+select b.studentid, studentname, sum(grades * units) / sum(units) as "gpa"
+from subject a, studentgrades b, student c
+where a.subjectid = b.subjectid and b.studentid = c.studentid
+group by b.studentid, studentname
+
+5.19. GPA with weight for each class
+select d.classid, sum(grades*units) / sum(units) as "gpa"
+from subject a, studentgrades b, student c, class d
+where a.subjectid = b.subjectid and b.studentid = c.studentid and c.classid = d.classid
+group by d.classid
+
+--------------------------------------  EXTRA EXERCISES  -------------------------------------
+1. Run the following code
+select b.*, c.*
+from student a, studentgrades b, subject c
+where classid = 'C01'
+and a.studentid = b.studentid and b.subjectid = c.subjectid
+
+2. Find classes (id and name) have the largest gpa with weight
+select d.classid, d.classname, sum(grades * units) / sum(units) as "gpa with weight"
+from subject a, studentgrades b, student c, class d
+where a.subjectid = b.subjectid and b.studentid = c.studentid and c.classid = d.classid
+group by d.classid
+having sum(grades * units) / sum(units) >= all(select sum(grades * units) / sum(units)
+                                             from subject a, studentgrades b, student c, class d
+											 where a.subjectid = b.subjectid and b.studentid = c.studentid and c.classid = d.classid
+											 group by d.classid)

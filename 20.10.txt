@@ -1,0 +1,138 @@
+CREATE TABLE Category
+(
+	CategoryID CHAR (3) PRIMARY KEY,
+	CatogoryName VARCHAR (50) NOT NULL
+);
+
+CREATE TABLE Product
+(
+	ProductID CHAR (5),
+	ProductName VARCHAR (50) NOT NULL,
+	UnitPrice INT not NULL,
+	CategoryID CHAR (5),
+	PRIMARY KEY (ProductID, CategoryID)
+);
+CREATE TABLE Warehouse
+(
+	WarehouseID CHAR (10),
+	WarehouseAddress VARCHAR (50) NOT NULL,
+	CategoryID CHAR(5),
+	PRIMARY KEY (WarehouseID,CategoryID)
+);
+CREATE TABLE Instock
+(
+	WarehouseID CHAR (10), 
+	ProductID CHAR (5), 
+	Quantity INT not Null,
+	PRIMARY KEY (WarehouseID,ProductID)
+);
+-- Nhap lieu category, product, warehouse, instock
+INSERT INTO Category 
+VALUES
+	('C01','GAO'),
+	('C02','NUOC GIAI KHAT'),
+	('C03','BIA'),
+	('C04','BANH'),
+	('C05','KEO');
+SELECT * FROM Category;
+
+INSERT INTO Product
+VALUES
+	('P01','GAO LUT','10000','C01'),
+	('P02','GAO THOM','12000','C01'),
+	('P03','GAO DEO','14000','C01'),
+	('P04','GAO ST24','16000','C01'),
+	('P05','GAO ST25','18000','C01'),
+	('P06','GAO MEM','11000','C01'),
+	('P07','NUOC PEPSI','5000','C02'),
+	('P08','NUOC COCA','6000','C02'),
+	('P09','NUOC YEN','7000','C02'),
+	('P010','NUOC DUA','8000','C02'),
+	('P11','NUOC EP TAO','9000','C02'),
+	('P12','NUOC CAM','5000','C02'),
+	('P13','BIA TIGER','10000','C03'),
+	('P14','BIA SAI GON','12000','C03'),
+	('P15','BIA HEINEKEN','14000','C03'),
+	('P16','BIA LARGUE ','16000','C03'),
+	('P17','BIA VIET','18000','C03'),
+	('P18','BIA BUDWEISER ','15000','C03'),
+	('P19','BANH KINH DO','10000','C04'),
+	('P20','BANH DA LON','11000','C04'),
+	('P21','BANH BAO','12000','C04'),
+	('P22','BANH TRUNG THU','13000','C04'),
+	('P23','BANH KEM','14000','C04'),
+	('P24','BANH SOCOLA','12000','C04'),
+	('P25','KEO DUA','5000','C05'),
+	('P26','KEO SAM','6000','C05'),
+	('P27','KEO KITKAT','7000','C05'),
+	('P28','KEO MILO','8000','C05'),
+	('P29','KEO ALPENLIEBE','9000','C05'),
+	('P30','KEO NOUGAT','10000','C05');
+SELECT * FROM Product;
+
+INSERT INTO Warehouse
+VALUES
+   ('W01','KHO 01','C01'),
+   ('W02','KHO 02','C02'),
+   ('W03','KHO 03','C03'),
+   ('W04','KHO 04','C04'),
+   ('W05','KHO 05','C05');
+SELECT * FROM Warehouse;
+
+INSERT INTO Instock
+VALUES 
+   ('W01','P01','20'),
+   ('W01','P02','10'),
+   ('W01','P03','12'),
+   ('W01','P04','11'),
+   ('W01','P05','8'),
+   ('W01','P06','10'),
+   ('W02','P07','30'),
+   ('W02','P08','50'),
+   ('W02','P09','45'),
+   ('W02','P10','32'),
+   ('W02','P11','20'),
+   ('W02','P12','24'),
+   ('W03','P13','26'),
+   ('W03','P14','10'),
+   ('W03','P15','36'),
+   ('W03','P16','26'),
+   ('W03','P17','23'),
+   ('W03','P18','19'),
+   ('W04','P19','30'),
+   ('W04','P20','25'),
+   ('W04','P21','35'),
+   ('W04','P22','15'),
+   ('W04','P23','40'),
+   ('W04','P24','10'),
+   ('W05','P25','33'),
+   ('W05','P26','23'),
+   ('W05','P27','13'),
+   ('W05','P28','3'),
+   ('W05','P29','12'),
+   ('W05','P30','5');
+SELECT * FROM Instock;
+-- LAM BAI TAP
+SELECT *
+FROM Instock A
+WHERE ProductID IN ( SELECT ProductID
+				     FROM Warehouse B,Product C
+					 WHERE A.WarehouseID=B.WarehouseID
+					AND B.CategoryID=C.CategoryID
+				   )
+SELECT *
+FROM Instock A, Warehouse B		
+WHERE A.WarehouseID=B.WarehouseID
+AND ProductID IN   ( SELECT ProductID
+				     FROM Warehouse C,Product D
+					 WHERE B.CategoryID <> C.CategoryID
+					 AND C.CategoryID = D.CategoryID
+				   )
+SELECT *
+FROM Instock A, Warehouse B	
+WHERE CategoryID='C01'
+AND A.WarehouseID=B.WarehouseID
+
+SELECT *
+FROM Product
+WHERE CategoryID='C01'

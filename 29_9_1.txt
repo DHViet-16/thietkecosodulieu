@@ -1,0 +1,4 @@
+UPDATE ClassS 
+SET ClassName = 'Computer Science'
+WHERE ClassID = 'CO3'
+SELECT * FROM ClassS

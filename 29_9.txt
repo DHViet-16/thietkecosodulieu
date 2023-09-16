@@ -1,0 +1,215 @@
+CREATE TABLE Subject
+(
+	SubjectID CHAR (3) PRIMARY KEY,
+	SubjectName VARCHAR (10) NOT NULL,
+	Unit INT not NULL
+);
+
+CREATE TABLE StudentGrades
+(
+	StudentID CHAR(3),
+	SubjectID CHAR(3),
+	Grades FLOAT,
+	PRIMARY KEY(StudentID, SubjectID)
+)
+
+
+CREATE TABLE Class
+(
+	ClassID CHAR (3) PRIMARY KEY ,
+	ClassName VARCHAR (10) ,
+	ClassYear CHAR(4)
+)
+
+CREATE TABLE Student
+(
+	StudentID CHAR(3),
+	StudentName VARCHAR (10),
+	StudentAddress VARCHAR (20),
+	ClassID CHAR (3),
+	PRIMARY KEY(StudentID,ClassID)
+)
+
+INSERT INTO Student 
+VALUES
+	('T01','','','C01'),
+	('T02','','','C01'),
+	('T03','','','C02'),
+	('T04','','','C01'),
+	('T05','','','C03'),
+	('T06','','','C03'),
+	('T07','','','C01'),
+	('T08','','','C02');
+SELECT * FROM Student
+
+INSERT INTO Subject 
+VALUES
+	('S01','TOAN',3),
+	('S02','VAN',3),
+	('S03','ANHVAN',2);
+SELECT * FROM Subject
+
+UPDATE Subject
+SET SubjectName = 'ANH VAN'
+WHERE SubjectID='S01'
+
+INSERT INTO StudentGrades
+VALUES
+	('T01','S01',3),
+	('T01','S02',6),
+	('T01','S03',8),
+	('T02','S01',5),
+	('T02','S03',7),
+	('T03','S02',9),
+	('T04','S01',10),
+	('T04','S03',2),
+	('T05','S01',9),
+	('T05','S02',5);
+SELECT * FROM StudentGrades
+
+INSERT into Classs
+VALUES
+	('C01', 'Mang may tinh', '2022'),
+	('C02', 'Co so du lieu', '2025'),
+	('C03', 'Toan roi rac', '2018'),
+	('C04', 'Mang may tinh', '2019'),
+	('C05', 'Ly thuyet do thi', '2021'),
+	('C06', 'Kinh te chinh tri Mac-Lenin', '2018');
+SELECT * FROM Classs
+
+SELECT A.SubjectID, SubjectName, Grades
+FROM StudentGrades A,
+	Subject B
+WHERE A.SubjectID= B.SubjectID
+	AND Grades <5
+	
+SELECT *
+FROM Subject
+WHERE SubjectID  NOT IN ( SELECT SubjectID
+						FROM StudentGrades
+						WHERE StudentID = 'T03')
+						
+SELECT Count(*) AS "SISO"
+FROM Student 
+WHERE ClassID='C01'
+
+SELECT Min(Grades),MAX(Grades), AVG(Grades)
+FROM StudentGrades 
+WHERE StudentID='T01'
+5.8
+SELECT  ClassID, Count (*)  AS "siso"
+From Student 
+Group By ClassID
+5.9
+SELECT   ClassID ,Count (*) AS "siso"
+FROM     Student
+GROUP By ClassID
+Having Count (*) >=  ALL (SELECT Count (*)  AS "siso"
+                         From Student 
+                         Group By ClassID)
+
+SELECT   ClassID ,Count (*) AS "siso"
+FROM     Student
+GROUP By ClassID
+Having Count (*) > (SELECT MAX(KK)
+				   FROM (SELECT Count (*) AS "KK"
+				   FROM Student
+				   Group by ClassID)
+				 Group by ClassID
+					)
+5.10
+SELECT AVG(Grades)
+FROM StudentGrades 
+WHERE StudentID='T02'
+5.11
+SELECT StudentID, AVG(Grades)
+FROM StudentGrades 
+Group by StudentID
+5.12
+SELECT Class AVG(Grades)
+FROM StudentGrades A, Student B
+WHERE A.StudentID = B.StudentID
+AND ClassID='C02'
+5.13
+SELECT ClassID, AVG(Grades)
+FROM StudentGrades A, Student B
+WHERE A.StudentID = B.StudentID
+Group by ClassID
+
+5.14
+SELECT StudentID, AVG(Grades)
+FROM StudentGrades 
+Group by StudentID
+Having  AVG(Grades) >=  ALL (SELECT AVG(Grades)
+                         From StudentGrades 
+                         Group By StudentID)
+5.15
+SELECT StudentID, StudentName, AVG(grades)
+  FROM StudentGrades natural join Student
+  GROUP BY StudentID, StudentName
+  HAVING AVG(Grades) >= ALL (
+  						  SELECT AVG(Grades)
+	  					  FROM StudentGrades
+	  					  GROUP BY StudentID
+  						 )
+5.16
+SELECT  ClassName, C.ClassID, AVG(Grades)
+FROM StudentGrades A , Student B, Classs C
+WHERE A.StudentID = B.StudentID
+AND B.ClassID = C.ClassID
+Group By ClassName, C.ClassID
+HAVING AVG(Grades) >= ALL (
+  						  SELECT AVG(Grades)
+	  					  FROM StudentGrades
+	  					  GROUP BY C.ClassID)
+						  
+						  
+SELECT ClassID,ClassName, avg(Grades)
+from StudentGrades  NATURAL join Student NATURAL join Classs
+group by ClassName,ClassID
+having avg(Grades)>= all( SELECT avg(Grades)
+						  from	public.StudentGrades natural join public.Student
+						  group by ClassID)
+
+5.17
+SELECT StudentID, (SUM(GRADES*UNIT)/SUM (UNIT)) AS GPA		
+FROM SUBJECT A, STUDENTGRADES B
+WHERE A.SUBJECTID = B.SUBJECTID
+GROUP BY STUDENTID;
+
+{SELECT StudentID, AVG(Grades), Unit
+FROM StudentGrades A, Subject B 
+WHERE A.SubjectID= B.SubjectID
+Group by StudentID,Unit
+Having AVG(Grades) >=  ALL (SELECT AVG(Grades)
+                         From StudentGrades 
+                         Group By StudentID)
+
+and unit >= all ( Select Unit 
+				    From Subject
+				   Group by Unit)}
+5.18
+SELECT C.StudentID, StudentName,(SUM(Grades*Unit)/SUM (Unit)) AS GPA		
+FROM Subject A, StudentGrades B, Student C
+WHERE A.SubjectID = B.SubjectID
+AND B.StudentID= C.StudentID
+GROUP BY C.StudentID,StudentName
+
+5.19
+SELECT D.ClassID,(SUM(Grades*Unit)/SUM (Unit)) AS GPA		
+FROM Subject A, StudentGrades B, Student C, Classs D
+WHERE A.SubjectID = B.SubjectID
+AND B.StudentID= C.StudentID
+AND C.ClassID= D.ClassID
+GROUP BY D.ClassID
+
+
+Alter Table Subject 
+ADD unique SubjectName ;
+Alter SubjectName set not Null  
+
+Alter Table StudentGrades
+ADD Constraint diem check (Grades >= 0 and Grades <=10) 
+
+
+UPDATE StudentGrades

@@ -1,0 +1,54 @@
+create table R1(A integer,B integer, C integer);
+create table R2(C integer,D integer, E integer);
+
+create or replace function func_R1()
+returns trigger language plpgsql as
+$$
+Begin
+	if exists (select * from R1,R2
+		  where new.B=R1.B
+		  and R1.C=R2.C
+		  and R1.B>R2.D) then
+	raise exception '%', TG_ARGV[0] ;
+	return null;
+	end if;
+	return new;
+end;
+$$
+
+create or replace trigger insert_R1
+after insert or update of B , C on R1
+for each row
+execute procedure func_R1(' B >D : wrong data') ;
+
+
+create or replace function func_R2()
+returns trigger language plpgsql as
+$$
+Begin
+	if exists (select * from R1,R2
+		  where new.D=R2.D
+		  and R1.C=R2.C
+		  and R1.B>R2.D) then
+	raise exception '%', TG_ARGV[0] ;
+	return null;
+	end if;
+	return new;
+end;
+$$
+
+
+create or replace trigger insert_R2
+after insert or update of C , D on R2
+for each row
+execute procedure func_R2('insert invalid D<B') ;
+
+
+SELECT * FROM R2
+INSERT INTO R2 VALUES(1,1,1)
+INSERT INTO R1 VALUES(1,2,1)
+INSERT INTO R1 VALUES(1,0,1)
+update R2 set D='0'
+update R1 set B='4'
+delete FROM R1
+delete FROM R2

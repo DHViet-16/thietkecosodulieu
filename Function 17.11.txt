@@ -1,0 +1,147 @@
+do 
+$$
+declare
+x integer;
+y date := '2022-11-07';
+z timestamp;
+begin
+x:=1;
+z:= now();
+raise notice ' var : x= %, y=%,z=%', x,y,z;
+end
+$$
+
+create or replace function sumxy(integer, integer)
+returns integer
+language plpgsql
+as
+$$
+declare 
+	ret integer;
+begin
+	ret :=$1+$2;
+	return ret;
+end
+$$
+select sumxy(2,3)
+
+do
+$$
+declare
+x Subject.Unit % type;
+begin
+select Unit into x
+from Subject
+where SubjectID = 'S01';
+raise notice 'x = %', x;
+end;
+$$
+
+
+create or replace function st_gpa()
+returns table (stid char(3), gpa float)
+language plpgsql 
+as
+$$
+begin
+return query
+select StudentID stid, avg(Grades) gpa
+from StudentGrades
+group by StudentID
+order by StudentID ;
+end ;
+$$
+select * from st_gpa()
+
+--ss class
+create or replace function ss_class()
+returns table (clid char(3), ss bigint)
+language plpgsql as
+$$
+begin
+return query
+select ClassID clid, count(*) ss
+from Student
+group by ClassID
+order by ClassID ;
+end ;
+$$
+call:
+select * from ss_class()
+--gpa class
+create or replace function class_gpa()
+returns table (clid char(3), gpa float)
+language plpgsql as
+$$
+begin
+return query
+select ClassID clid,avg(Grades)	 gpa		
+from StudentGrades A,Student B
+where A.StudentID=B.StudentID
+group by ClassID
+order by ClassID ;
+end ;
+$$
+call:
+select * from class_gpa()
+------------------------------
+create or replace function quad_eq (a float, b float, c float)
+returns table(x1 float, x2 float)
+language plpgsql as
+$$
+declare
+delta float;
+	x1 float;
+	x2 float;
+begin
+	delta := b*b - 4*a*c;
+if delta < 0 then
+return query
+select x1, x2 where 1 = 2 ;
+elseif delta = 0 then
+	x1 := -b / (2*a) ;
+return query
+select round(x1::decimal,2)::float , round(x1::decimal,2)::float ;
+else
+	x1 := -b - sqrt(delta);
+	x2 := -b + sqrt(delta);
+return query
+select round(x1::decimal,2)::float , round(x2::decimal,2)::float ;
+end if;
+end
+$$
+call:
+select quad_eq(1,1,1);
+select quad_eq(1,-2,1);
+select quad_eq(1,-3,1);
+
+----------------------
+create or replace function quad_eq2 (a float, b float, c float)
+returns text
+language plpgsql as
+$$
+declare
+	mess text;
+delta float;
+	x1 float;
+	x2 float;
+begin
+	delta := b*b - 4*a*c;
+if delta < 0 then
+select 'No solution' into mess ;
+elseif delta = 0 then
+	x1 := -b / (2*a) ;
+select 'x1 = x2 = ' || round(x1::decimal,2)::float into mess ;
+else
+	x1 := (-b - sqrt(delta))/(2*a);
+	x2 := (-b + sqrt(delta))/(2*a);
+select 'x1 = '|| round(x1::decimal,2)::float ||
+		'x2 ='|| round(x1::decimal,2)::float into mess ;
+end if;
+return mess ;
+end
+$$
+select quad_eq2(1,1,1);
+select quad_eq2(1,-2,1);
+select quad_eq2(1,-3,1);
+

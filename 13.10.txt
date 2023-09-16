@@ -1,0 +1,201 @@
+CREATE TABLE Category
+(
+	CategoryID CHAR (3) PRIMARY KEY,
+	CatogoryName VARCHAR (50) NOT NULL
+);
+
+CREATE TABLE Product
+(
+	ProductID CHAR (5),
+	ProductName VARCHAR (50) NOT NULL,
+	UnitPrice INT not NULL,
+	CategoryID CHAR (5),
+	PRIMARY KEY (ProductID, CategoryID)
+);
+
+CREATE TABLE Invoice
+(
+	InvoiceID CHAR (3) PRIMARY KEY,
+	InvoiceDate DATE NOT NULL,
+	Description VARCHAR (50)
+);
+
+CREATE TABLE InvoiceDetail
+(
+	InvoiceID CHAR (3),
+	ProductID CHAR (3) NOT NULL,
+	Quantity INT NOT NULL,
+	PRIMARY KEY (InvoiceID, ProductID)
+);
+
+
+-- NHẬP DỮ LIỆU CHO BẢNG CATEGORY, PRODUCT, INVOICE, INVOIEDETAIL
+
+INSERT INTO Category 
+VALUES
+	('C01','GAO'),
+	('C02','NUOC GIAI KHAT'),
+	('C03','BIA'),
+	('C04','BANH'),
+	('C05','KEO');
+SELECT * FROM Category;
+
+INSERT INTO Product
+VALUES
+	('P01','GAO LUT','10000','C01'),
+	('P02','GAO THOM','12000','C01'),
+	('P03','GAO DEO','14000','C01'),
+	('P04','GAO ST24','16000','C01'),
+	('P05','GAO ST25','18000','C01'),
+	('P06','GAO MEM','11000','C01'),
+	('P07','NUOC PEPSI','5000','C02'),
+	('P08','NUOC COCA','6000','C02'),
+	('P09','NUOC YEN','7000','C02'),
+	('P010','NUOC DUA','8000','C02'),
+	('P11','NUOC EP TAO','9000','C02'),
+	('P12','NUOC CAM','5000','C02'),
+	('P13','BIA TIGER','10000','C03'),
+	('P14','BIA SAI GON','12000','C03'),
+	('P15','BIA HEINEKEN','14000','C03'),
+	('P16','BIA LARGUE ','16000','C03'),
+	('P17','BIA VIET','18000','C03'),
+	('P18','BIA BUDWEISER ','15000','C03'),
+	('P19','BANH KINH DO','10000','C04'),
+	('P20','BANH DA LON','11000','C04'),
+	('P21','BANH BAO','12000','C04'),
+	('P22','BANH TRUNG THU','13000','C04'),
+	('P23','BANH KEM','14000','C04'),
+	('P24','BANH SOCOLA','12000','C04'),
+	('P25','KEO DUA','5000','C05'),
+	('P26','KEO SAM','6000','C05'),
+	('P27','KEO KITKAT','7000','C05'),
+	('P28','KEO MILO','8000','C05'),
+	('P29','KEO ALPENLIEBE','9000','C05'),
+	('P30','KEO NOUGAT','10000','C05');
+SELECT * FROM Product;
+
+INSERT INTO Invoice 
+VALUES
+	('I01','10/11/2021'),
+	('I02','10/11/2021'),
+	('I03','13/09/2023'),
+	('I04','21/05/2019'),
+	('I05','21/05/2021'),
+	('I06','22/07/2021'),
+	('I07','12/04/2019'),
+	('I08','09/11/2022'),
+	('I09','09/11/2023'),
+	('I10','09/11/2022');
+SELECT * FROM Invoice;
+
+INSERT INTO InvoiceDetail 
+VALUES
+	('I01','P01','10'),
+	('I01','P11','08'),
+	('I01','P23','05'),
+	('I02','P02','12'),
+	('I02','P12','14'),
+	('I02','P24','02'),
+	('I02','P03','20'),
+	('I03','P13','14'),
+	('I03','P25','15'),
+	('I04','P04','06'),
+	('I04','P14','22'),
+	('I04','P05','20'),
+	('I04','P15','04'),
+	('I05','P27','17'),
+	('I05','P06','03'),
+	('I05','P16','23'),
+	('I06','P28','13'),
+	('I06','P07','10'),
+	('I06','P17','05'),
+	('I06','P29','21'),
+	('I07','P08','14'),
+	('I07','P18','10'),
+	('I07','P30','07'),
+	('I08','P09','08'),
+	('I08','P19','12'),
+	('I09','P10','14'),
+	('I09','P20','14'),
+	('I09','P21','26'),
+	('I10','P22','15'),
+	('I10','P26','07');
+SELECT * FROM InvoiceDetail;
+
+
+
+-- Làm bài tập 
+
+5.1. Find products of the category ID = "CO1"
+SELECT ProductID,ProductName
+FROM Product
+WHERE CategoryID='C01'
+
+5.2. Find products (ID, name and price) of the category ID = "CO2".
+SELECT ProductID,ProductName, UnitPrice
+FROM Product
+WHERE CategoryID='C02'
+
+5.3. Find products (*) with unit price from 10 to 50
+SELECT ProductID,ProductName
+FROM Product
+WHERE UnitPrice>= 10000 AND UnitPrice<= 50000
+
+5.4. Show invoices, it created at date = d.
+SELECT InvoiceID
+FROM Invoice
+WHERE InvoiceDate='10/11/2021'
+
+5.5. Show invoices, it created on year = 2021.
+SELECT InvoiceID
+FROM Invoice
+WHERE Date_part('Year',InvoiceDate::Date)=2021
+
+5.6. Find products (ID, name, unit price and quantity), it belong to the invoice at date = d.
+SELECT A.ProductID, ProductName, UnitPrice,Quantity
+FROM Product A, InvoiceDetail B, Invoice C
+WHERE A.ProductID=B.ProductID
+AND B.InvoiceID=C.InvoiceID
+AND InvoiceDate='21/07/2021'
+Group by A.ProductID, ProductName, UnitPrice,Quantity 
+
+5.7. Total quantity of each invoice
+SELECT InvoiceID, sum(Quantity)
+FROM InvoiceDetail
+group by InvoiceID;
+
+5.8. Total quantity of each invoice in date = d.
+SELECT A.InvoiceID, sum(Quantity)
+FROM InvoiceDetail A, Invoice B
+WHERE A.InvoiceID=B.InvoiceID
+AND InvoiceDate='09/11/2022'
+group by A.InvoiceID;
+
+5.9. Total cost (= quantity times to unit price) of each invoice.
+SELECT InvoiceID, sum(Quantity*UnitPrice)
+FROM InvoiceDetail A, Product B
+WHERE A.ProductID =B.ProductID
+Group by InvoiceID;
+
+5.10. With invoices have the largest total quantity.
+SELECT InvoiceID
+FROM InvoiceDetail
+GROUP BY InvoiceID 
+HAVING SUM (Quantity)>=ALL (
+  						  SELECT sum(Quantity)
+	  					  FROM InvoiceDetail
+	  					  GROUP BY InvoiceID
+  						 )
+						 
+5.11. In date = d, with invoices have the largest total quantity.
+SELECT A.InvoiceID
+FROM InvoiceDetail A, Invoice B
+WHERE A.InvoiceID=B.InvoiceID
+AND InvoiceDate='09/11/2022'
+GROUP BY A.InvoiceID 
+HAVING SUM (Quantity)>=ALL (
+  						  SELECT sum(Quantity)
+	  					  FROM InvoiceDetail 
+	  					  GROUP BY A.InvoiceID
+  						 )
+						 
